@@ -1,84 +1,84 @@
 # LLM Text Assistant
 
-Projeto simples em Python para testar a integração de aplicações com modelos de linguagem (LLMs) por API.
+Criei este projeto para praticar a integração de uma aplicação Python com um modelo de linguagem (LLM) por API.
 
-A ideia foi criar um assistente de terminal que recebe um texto e permite escolher entre três tarefas: **resumir**, **explicar** ou **revisar a escrita**. É um projeto pequeno, mas útil para praticar chamadas de API, organização de prompts, variáveis de ambiente e tratamento de erros.
+O assistente recebe um texto e executa três tarefas: **resumir**, **explicar** ou **revisar a escrita**. Comecei com uma versão de terminal e depois adicionei uma interface web com Streamlit para facilitar os testes.
 
 ## Tecnologias
 
-- Python 3.10+
-- OpenAI API
-- python-dotenv
-- pytest (testes)
+Python 3.10+ · OpenAI API · Streamlit · python-dotenv · pytest
+
+## Funcionalidades
+
+- Resumo de textos com foco nas informações principais
+- Explicação de conteúdos em linguagem simples
+- Revisão de escrita mantendo o sentido original
+- Histórico de resultados durante a sessão da interface web
+- Validação de entrada e tratamento básico de erros
 
 ## Como executar
 
-1. Clone o repositório e entre na pasta:
+Clone o projeto:
 
-   ```bash
-   git clone https://github.com/Dzelmee/llm-text-assistant.git
-   cd llm-text-assistant
-   ```
+```bash
+git clone https://github.com/Dzelmee/llm-text-assistant.git
+cd llm-text-assistant
+```
 
-2. Crie um ambiente virtual e instale as dependências:
+Crie um ambiente virtual e instale as dependências:
 
-   ```bash
-   python -m venv .venv
-   # Windows (PowerShell):
-   .venv\Scripts\Activate.ps1
-   # Linux/macOS: source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+```bash
+python -m venv .venv
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# Linux/macOS:
+# source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-3. Copie `.env.example` para `.env` e adicione sua chave da API:
+Copie `.env.example` para `.env` e configure sua chave:
 
-   ```env
-   OPENAI_API_KEY=sua_chave_aqui
-   OPENAI_MODEL=gpt-4o-mini
-   ```
+```env
+OPENAI_API_KEY=sua_chave_aqui
+OPENAI_MODEL=gpt-4o-mini
+```
 
-4. Execute:
+**Interface web:**
 
-   ```bash
-   python app.py
-   ```
+```bash
+streamlit run web_app.py
+```
 
-A API pode gerar custos conforme o modelo e o uso. **Nunca publique o arquivo `.env` ou sua chave de API.**
+O navegador abrirá a aplicação localmente, geralmente em `http://localhost:8501`.
 
-## Exemplo de uso
+**Versão de terminal:**
 
-```text
-LLM Text Assistant
-1 - Resumir
-2 - Explicar
-3 - Revisar escrita
-Escolha uma opção: 1
-Cole seu texto. Para finalizar, digite FIM em uma linha separada:
-Uma API permite a comunicação entre aplicações diferentes.
-FIM
-
-Resultado:
-[resumo gerado pelo modelo]
+```bash
+python app.py
 ```
 
 ## Testes
 
 ```bash
-pytest -q
+python -m pytest -q
 ```
 
-Os testes verificam a montagem das mensagens e as validações locais, sem consumir a API.
+Os testes unitários não fazem chamadas à API.
 
-## O que pratiquei
+## Observações
 
-- Integração com um LLM usando SDK e API
-- Construção de prompts para tarefas diferentes
-- Separação de configurações com variáveis de ambiente
-- Tratamento básico de erros e testes unitários
+- A chave da API fica no arquivo `.env`, que não é enviado ao GitHub.
+- As chamadas à OpenAI podem gerar custos, dependendo do uso.
+- O histórico da interface web fica apenas na sessão do navegador; não existe banco de dados.
+- Não há versão hospedada: para testar, é necessário executar o projeto localmente com sua própria chave.
+
+## O que aprendi
+
+Pratiquei integração com APIs de LLMs, construção de prompts, organização de código Python, configuração por variáveis de ambiente, testes e desenvolvimento de uma interface simples.
 
 ## Próximos passos
 
-Adicionar uma interface web e permitir salvar o histórico das interações.
+Melhorar a experiência de uso, adicionar limites de entrada e explorar outras opções de modelos.
 
 ---
 
