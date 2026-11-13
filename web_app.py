@@ -28,7 +28,7 @@ st.markdown(
                     #151a17;
         color: #f1eee6;
     }
-    /* Ambient atmosphere: pure CSS, fixed behind the content. */
+    /* Luz ambiente fixa atrás do conteúdo. */
     .stApp { isolation: isolate; }
     .stApp::before, .stApp::after {
         content: ""; position: fixed; pointer-events: none;
