@@ -23,44 +23,95 @@ st.markdown(
     """
     <style>
     :root { color-scheme: dark; }
-    .stApp { background: #10131a; color: #e8eaf0; }
-    .block-container { max-width: 850px; padding-top: 3.4rem; padding-bottom: 3rem; }
+    .stApp {
+        background: radial-gradient(ellipse at 75% 0%, #28342b 0%, transparent 45%),
+                    #151a17;
+        color: #f1eee6;
+    }
+    .block-container { max-width: 850px; padding-top: 3rem; padding-bottom: 3rem; }
     header[data-testid="stHeader"] { background: transparent; }
     #MainMenu, footer { visibility: hidden; }
-    .eyebrow { color: #9da9bb; font-size: .76rem; letter-spacing: .19em; font-weight: 700; }
+    .eyebrow { color: #b4c8ac; font-size: .74rem; letter-spacing: .19em; font-weight: 750; }
     .hero-title { font-size: clamp(2.4rem, 6vw, 4.1rem); line-height: 1.08;
-                  font-weight: 750; letter-spacing: -.055em; margin: .9rem 0 .8rem; }
-    .hero-title span { color: #a9c2f4; }
-    .hero-copy { color: #aab4c4; font-size: 1.06rem; max-width: 580px;
-                 line-height: 1.7; margin-bottom: 1.9rem; }
-    .section-kicker { color: #c6d0df; font-size: .9rem; font-weight: 650;
+                  font-weight: 750; letter-spacing: -.055em; margin: .75rem 0 .8rem; }
+    .hero-title span { color: #c2d6ad; }
+    .hero-copy { color: #c0c8bc; font-size: 1.06rem; max-width: 580px;
+                 line-height: 1.7; margin-bottom: 1.7rem; }
+    .section-kicker { color: #d9e2d2; font-size: .95rem; font-weight: 650;
                       margin: 1.3rem 0 .4rem; }
-    .stTextArea textarea, [data-baseweb="select"] > div {
-        background: #181e29 !important; border: 1px solid #30394a !important;
-        border-radius: 12px !important; color: #f3f5f8 !important;
+    .stTextArea textarea {
+        background: #202922 !important; border: 1px solid #445447 !important;
+        border-radius: 14px !important; color: #f4f1e9 !important;
     }
-    .stTextArea textarea:focus { border-color: #93b7ff !important; }
-    .stForm { border: 1px solid #30394a; border-radius: 18px;
-              background: #151a23; padding: 1.25rem; }
+    .stTextArea textarea:focus { border-color: #a8c49a !important;
+                                box-shadow: 0 0 0 1px #a8c49a !important; }
+    .stForm { border: 1px solid #3b4c3d; border-radius: 20px;
+              background: #1c251f; padding: 1.35rem; }
+    div[data-testid="stRadio"] [role="radiogroup"] { gap: .65rem; }
+    div[data-testid="stRadio"] label {
+        border: 1px solid #4a5b4c; background: #202b23; border-radius: 12px;
+        padding: .65rem .95rem; transition: background .2s, border-color .2s, transform .2s;
+    }
+    div[data-testid="stRadio"] label:hover {
+        background: #2c3a30; border-color: #a8c49a; transform: translateY(-2px);
+    }
+    div[data-testid="stRadio"] label:has(input:checked) {
+        background: #304132; border-color: #b6d1a6;
+    }
     .stButton button[kind="primary"], .stFormSubmitButton button {
-        border-radius: 10px; font-weight: 650; min-height: 44px;
+        border-radius: 12px; font-weight: 700; min-height: 48px;
     }
-    .stFormSubmitButton button { background: #b8d0ff; color: #101827; border: 0; }
-    .stFormSubmitButton button:hover { background: #d4e2ff; color: #101827; }
-    [data-testid="stExpander"] { background: #171d27; border: 1px solid #30394a;
-                                  border-radius: 12px; }
-    .footer-note { color: #8996a9; font-size: .83rem; line-height: 1.6;
-                   margin-top: 2.5rem; border-top: 1px solid #30394a;
+    .stFormSubmitButton button { background: #bdd5a9; color: #192219; border: 0; }
+    .stFormSubmitButton button:hover { background: #d3e5c1; color: #192219; }
+    [data-testid="stExpander"] { background: #202a23; border: 1px solid #445447;
+                                  border-radius: 14px; }
+    .footer-note { color: #a1afa0; font-size: .83rem; line-height: 1.6;
+                   margin-top: 2.5rem; border-top: 1px solid #3b4c3d;
                    padding-top: 1.3rem; }
+    .brand-row { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.2rem; }
+    .mascot { position: relative; flex: 0 0 76px; height: 76px;
+              background: #bdd5a9; border-radius: 28px 28px 24px 24px;
+              transform: rotate(-6deg); box-shadow: 0 10px 30px #0003;
+              animation: mascot-float 3.5s ease-in-out infinite; }
+    .mascot:before, .mascot:after { content: ""; position: absolute; top: 31px;
+                                    width: 8px; height: 10px; background: #263729;
+                                    border-radius: 50%; animation: mascot-blink 5s infinite; }
+    .mascot:before { left: 23px; } .mascot:after { right: 23px; }
+    .mascot-smile { position: absolute; left: 31px; top: 43px; width: 16px; height: 9px;
+                    border-bottom: 3px solid #263729; border-radius: 0 0 50% 50%; }
+    .mascot-leaf { position: absolute; top: -13px; left: 35px; width: 20px; height: 24px;
+                   background: #8faa80; border-radius: 100% 0 100% 0;
+                   transform: rotate(-25deg); }
+    .mascot-name { font-weight: 800; font-size: 1.3rem; letter-spacing: -.04em; }
+    .mascot-caption { font-size: .82rem; color: #aebda8; }
+    @keyframes mascot-float { 0%,100% { transform: translateY(0) rotate(-6deg); }
+                              50% { transform: translateY(-7px) rotate(-2deg); } }
+    @keyframes mascot-blink { 0%,44%,48%,100% { transform: scaleY(1); }
+                              46% { transform: scaleY(.12); } }
+    @media (prefers-reduced-motion: reduce) {
+        .mascot, .mascot:before, .mascot:after { animation: none; }
+        div[data-testid="stRadio"] label { transition: none; }
+    }
     @media (max-width: 640px) {
-        .block-container { padding-top: 2rem; }
+        .block-container { padding-top: 1.8rem; }
         .hero-copy { font-size: .98rem; }
+        .mascot { flex-basis: 62px; height: 62px; }
+        .mascot:before, .mascot:after { top: 24px; }
+        .mascot:before { left: 18px; } .mascot:after { right: 18px; }
+        .mascot-smile { left: 24px; top: 36px; }
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+st.markdown(
+    '<div class="brand-row"><div class="mascot" aria-hidden="true">'
+    '<div class="mascot-leaf"></div><div class="mascot-smile"></div></div>'
+    '<div><div class="mascot-name">texto<span style="color:#bdd5a9">.</span></div>'
+    '<div class="mascot-caption">Seu companheiro de escrita</div></div></div>',
+    unsafe_allow_html=True,
+)
 st.markdown('<div class="eyebrow">TEXTO / FERRAMENTA DE ESCRITA</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="hero-title">Boas ideias merecem<br><span>palavras melhores.</span></div>',
@@ -101,7 +152,12 @@ else:
     st.caption("Modo OpenAI: exige chave e créditos disponíveis na API.")
 
 with st.form("assistant_form"):
-    action = st.selectbox("O que você precisa?", list(choices))
+    action = st.radio(
+        "O que você precisa?",
+        list(choices),
+        horizontal=True,
+        help="Escolha uma das três ações. Não é necessário digitar nesta seleção.",
+    )
     if is_demo:
         st.caption("Exemplo preenchido automaticamente. Para usar um texto próprio, selecione IA gratuita (Groq).")
         st.code(EXAMPLES[choices[action]]["input"], language=None, wrap_lines=True)
