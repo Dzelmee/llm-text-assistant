@@ -299,13 +299,21 @@ elif mode == "IA gratuita (Groq)":
 else:
     st.caption("Modo OpenAI: exige chave e créditos disponíveis na API.")
 
+action = st.radio(
+    "O que você precisa?",
+    list(choices),
+    horizontal=True,
+    help="Escolha uma das três ações.",
+)
 with st.form("assistant_form"):
-    action = st.radio(
-        "O que você precisa?",
-        list(choices),
-        horizontal=True,
-        help="Escolha uma das três ações. Não é necessário digitar nesta seleção.",
-    )
+    summary_length = "Médio"
+    if action == "Resumir":
+        summary_length = st.radio(
+            "Tamanho do resumo",
+            ["Curto", "Médio", "Detalhado"],
+            horizontal=True,
+            help="Curto: até 70 palavras. Médio: 100 a 150. Detalhado: 200 a 300.",
+        )
     if is_demo:
         st.caption("Exemplo preenchido automaticamente. Para usar um texto próprio, selecione IA gratuita (Groq).")
         st.code(EXAMPLES[choices[action]]["input"], language=None, wrap_lines=True)
@@ -349,7 +357,7 @@ if submitted:
         try:
             provider = "groq" if mode == "IA gratuita (Groq)" else "openai"
             with st.spinner("Preparando resultado..."):
-                result = generate_text(choices[action], user_text, provider)
+                result = generate_text(choices[action], user_text, provider, summary_length=summary_length)
             source = "Groq · IA real" if provider == "groq" else "OpenAI · IA real"
             st.session_state.history.insert(0, (action, result, source))
         except RateLimitError as exc:
@@ -392,8 +400,10 @@ if st.session_state.history:
     st.markdown('<div class="section-kicker">Resultados recentes</div>', unsafe_allow_html=True)
     for index, (action, result, source) in enumerate(st.session_state.history):
         with st.expander(f"{action} · {source} · {index + 1}", expanded=index == 0):
-            st.write(result)
-            st.code(result, language=None)
+            st.markdown(result)
+            with st.popover("Copiar resultado"):
+                st.caption("Use o ícone de copiar no canto do bloco abaixo.")
+                st.code(result, language=None, wrap_lines=True)
     if st.button("Limpar resultados", type="secondary"):
         st.session_state.history = []
         st.rerun()
