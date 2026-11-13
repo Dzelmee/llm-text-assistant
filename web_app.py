@@ -3,6 +3,7 @@ import os
 import time
 
 import streamlit as st
+import streamlit.components.v1 as components
 from dotenv import load_dotenv
 from openai import APIConnectionError, APIStatusError, APITimeoutError, RateLimitError
 
@@ -74,68 +75,6 @@ st.markdown(
                   font-weight: 750; letter-spacing: -.055em; margin: .75rem 0 .8rem; }
     .hero-title span { color: #c2d6ad; }
     .hero-title .walking-mascot { color: initial; }
-    .hero-first-line { display: block; position: relative; width: fit-content;
-                       max-width: 100%; white-space: nowrap; margin-top: 4.4rem; }
-    .hero-first-line .headline-text { color: #f1eee6; }
-    .walking-mascot { position: absolute; width: 38px; height: 54px;
-                      bottom: calc(100% - .12em); left: 0; pointer-events: none;
-                      z-index: 3; transform-origin: center bottom;
-                      animation: mascot-route 16s linear infinite !important; }
-    .walking-mascot .wm-head { position: absolute; top: 3px; left: 3px;
-                               width: 32px; height: 32px; border-radius: 13px;
-                               background: #bdd5a9; z-index: 4; }
-    .walking-mascot .wm-leaf { position: absolute; top: -4px; left: 19px;
-                               width: 9px; height: 14px; background: #8faa80;
-                               border-radius: 100% 0 100% 0; transform: rotate(-25deg);
-                               z-index: 5; }
-    .walking-mascot .wm-eye { position: absolute; top: 13px; width: 4px;
-                              height: 5px; border-radius: 50%; background: #263729;
-                              animation: mascot-blink 5s infinite; }
-    .walking-mascot .wm-eye:first-child { left: 9px; }
-    .walking-mascot .wm-eye:nth-child(2) { right: 9px; }
-    .walking-mascot .wm-smile { position: absolute; top: 21px; left: 12px;
-                                width: 9px; height: 5px; border-bottom: 2px solid #263729;
-                                border-radius: 50%; }
-    .walking-mascot .wm-body { position: absolute; top: 33px; left: 12px;
-                               width: 15px; height: 11px; border-radius: 7px;
-                               background: #91ac86; z-index: 2; }
-    .walking-mascot .wm-arm, .walking-mascot .wm-leg {
-        position: absolute; width: 5px; background: #bdd5a9;
-        border-radius: 4px; transform-origin: top center;
-        animation: mascot-step .55s ease-in-out infinite alternate !important;
-    }
-    .walking-mascot .wm-arm { top: 35px; height: 10px; }
-    .walking-mascot .wm-leg { top: 43px; height: 11px; background: #91ac86; }
-    .walking-mascot .wm-left.wm-arm { left: 9px; }
-    .walking-mascot .wm-right.wm-arm { right: 9px; animation-delay: -.55s; }
-    .walking-mascot .wm-left.wm-leg { left: 13px; }
-    .walking-mascot .wm-right.wm-leg { right: 13px; animation-delay: -.55s; }
-    @keyframes mascot-step {
-        from { transform: rotate(-24deg); } to { transform: rotate(24deg); }
-    }
-    /* Saltos arredondados nos dois espaços; a posição horizontal nunca
-       ultrapassa a largura da frase. */
-    @keyframes mascot-route {
-        0%, 3% { left: 0; transform: translateY(0) scaleX(1); }
-        17% { left: 17%; transform: translateY(0) scaleX(1); }
-        21% { left: 22%; transform: translateY(-10px) scaleX(1); }
-        25% { left: 27%; transform: translateY(0) scaleX(1); }
-        33% { left: 43%; transform: translateY(0) scaleX(1); }
-        37% { left: 48%; transform: translateY(-10px) scaleX(1); }
-        41% { left: 53%; transform: translateY(0) scaleX(1); }
-        47% { left: calc(100% - 38px); transform: translateY(0) scaleX(1); }
-        50% { left: calc(100% - 38px); transform: translateY(0) scaleX(-1); }
-        53% { left: calc(100% - 38px); transform: translateY(0) scaleX(-1); }
-        59% { left: 53%; transform: translateY(0) scaleX(-1); }
-        63% { left: 48%; transform: translateY(-10px) scaleX(-1); }
-        67% { left: 43%; transform: translateY(0) scaleX(-1); }
-        75% { left: 27%; transform: translateY(0) scaleX(-1); }
-        79% { left: 22%; transform: translateY(-10px) scaleX(-1); }
-        83% { left: 17%; transform: translateY(0) scaleX(-1); }
-        97% { left: 0; transform: translateY(0) scaleX(-1); }
-        100% { left: 0; transform: translateY(0) scaleX(1); }
-    }
-
     .hero-copy { color: #c0c8bc; font-size: 1.06rem; max-width: 580px;
                  line-height: 1.7; margin-bottom: 1.7rem; }
     .section-kicker { color: #d9e2d2; font-size: .95rem; font-weight: 650;
@@ -215,18 +154,115 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.markdown('<div class="eyebrow">TEXTO / FERRAMENTA DE ESCRITA</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="hero-title"><span class="hero-first-line">'
-    '<span class="headline-text">Boas ideias merecem</span>'
-    '<span class="walking-mascot" aria-hidden="true">'
-    '<span class="wm-leaf"></span><span class="wm-head">'
-    '<i class="wm-eye"></i><i class="wm-eye"></i><i class="wm-smile"></i></span>'
-    '<span class="wm-arm wm-left"></span><span class="wm-arm wm-right"></span>'
-    '<span class="wm-body"></span>'
-    '<span class="wm-leg wm-left"></span><span class="wm-leg wm-right"></span>'
-    '</span></span><span>palavras melhores.</span></div>',
-    unsafe_allow_html=True,
+components.html(
+    """
+    <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+    <style>
+      *{box-sizing:border-box}html,body{margin:0;padding:0;background:transparent;overflow:hidden}
+      body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f1eee6}
+      .stage{position:relative;margin-top:63px;width:max-content;max-width:100%}
+      .phrase,.second{font-size:clamp(22px,5.8vw,65px);font-weight:750;letter-spacing:-.055em;line-height:1.12;white-space:nowrap}
+      .second{color:#c2d6ad}
+      .walker{position:absolute;left:0;top:0;width:38px;height:54px;pointer-events:none;will-change:transform;transform-origin:center bottom}
+      .head{position:absolute;top:3px;left:3px;width:32px;height:32px;background:#bdd5a9;border-radius:13px;z-index:4}
+      .leaf{position:absolute;top:-4px;left:19px;width:9px;height:14px;background:#8faa80;border-radius:100% 0 100% 0;transform:rotate(-25deg);z-index:5}
+      .eye{position:absolute;top:13px;width:4px;height:5px;background:#263729;border-radius:50%;animation:blink 5s infinite}
+      .e1{left:9px}.e2{right:9px}
+      .smile{position:absolute;top:21px;left:12px;width:9px;height:5px;border-bottom:2px solid #263729;border-radius:50%}
+      .body{position:absolute;top:33px;left:12px;width:15px;height:11px;background:#91ac86;border-radius:7px;z-index:2}
+      .arm,.leg{position:absolute;width:5px;border-radius:4px;transform-origin:top;animation:swing .55s ease-in-out infinite alternate}
+      .arm{top:35px;height:10px;background:#bdd5a9}.leg{top:43px;height:11px;background:#91ac86}
+      .a1{left:9px}.a2{right:9px;animation-delay:-.55s}.l1{left:13px}.l2{right:13px;animation-delay:-.55s}
+      @keyframes swing{from{transform:rotate(-24deg)}to{transform:rotate(24deg)}}
+      @keyframes blink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.12)}}
+      @media(max-width:500px){.stage{margin-top:62px}.phrase,.second{font-size:clamp(18px,5.5vw,30px)}}
+    </style></head><body>
+      <div class="stage"><div class="phrase">Boas ideias merecem</div>
+        <div class="walker" aria-hidden="true"><div class="leaf"></div><div class="head">
+          <i class="eye e1"></i><i class="eye e2"></i><i class="smile"></i></div>
+          <div class="arm a1"></div><div class="arm a2"></div><div class="body"></div>
+          <div class="leg l1"></div><div class="leg l2"></div></div>
+      </div><div class="second">palavras melhores.</div>
+      <script>
+        const phrase=document.querySelector('.phrase'),walker=document.querySelector('.walker');
+        const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+        let surface=[],spaces=[],start=0,last=0,currentY=null;
+        const smooth=u=>{u=Math.max(0,Math.min(1,u));return u*u*(3-2*u)};
+        function measure(){
+          const cs=getComputedStyle(phrase),r=phrase.getBoundingClientRect(),dpr=2;
+          canvas.width=Math.ceil(r.width*dpr);canvas.height=Math.ceil(r.height*dpr);
+          ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);
+          ctx.fillStyle='white';ctx.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;
+          ctx.textBaseline='alphabetic';
+          const spacing=parseFloat(cs.letterSpacing)||0,baseline=parseFloat(cs.fontSize)*.86;
+          let x=0;spaces=[];
+          for(const ch of phrase.textContent){
+            const width=ctx.measureText(ch).width+spacing;
+            if(ch===' ')spaces.push({start:x,end:x+width});
+            else ctx.fillText(ch,x,baseline);
+            x+=width;
+          }
+          const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+          surface=[];
+          for(let ix=0;ix<canvas.width;ix++){
+            let top=null;
+            for(let iy=0;iy<canvas.height;iy++){
+              if(pixels[(iy*canvas.width+ix)*4+3]>90){top=iy/dpr;break}
+            }
+            surface.push(top);
+          }
+        }
+        function ground(x){
+          const scale=canvas.width/Math.max(1,phrase.getBoundingClientRect().width);
+          const center=Math.round(x*scale),radius=Math.round(5*scale);
+          let sum=0,weights=0;
+          for(let i=Math.max(0,center-radius);i<=Math.min(surface.length-1,center+radius);i++){
+            if(surface[i]===null)continue;
+            const weight=1-Math.abs(i-center)/(radius+1);
+            sum+=surface[i]*weight;weights+=weight;
+          }
+          return weights?sum/weights:null;
+        }
+        function animate(now){
+          if(!start)start=now;
+          const dt=last?Math.min((now-last)/1000,.05):.016;last=now;
+          const t=((now-start)/16000)%1;
+          const width=phrase.getBoundingClientRect().width;
+          const range=Math.max(0,width-38);
+          let progress,dir,moving;
+          if(t<.44){progress=smooth(t/.44);dir=1;moving=true}
+          else if(t<.5){progress=1;dir=1;moving=false}
+          else if(t<.94){progress=1-smooth((t-.5)/.44);dir=-1;moving=true}
+          else{progress=0;dir=-1;moving=false}
+          const x=range*progress,foot=x+19;
+          const fs=parseFloat(getComputedStyle(phrase).fontSize);
+          let y=ground(foot);if(y===null)y=fs*.20;
+          let jump=0;
+          for(const gap of spaces){
+            const margin=Math.max(10,fs*.22),left=gap.start-margin,right=gap.end+margin;
+            if(foot>=left&&foot<=right){
+              const u=(foot-left)/(right-left);
+              jump=Math.max(jump,Math.sin(Math.PI*smooth(u))*Math.min(13,fs*.3));
+            }
+          }
+          const step=moving?Math.abs(Math.sin(now*.008))*.8:0;
+          const target=y-54-jump-step;
+          if(currentY===null)currentY=target;
+          currentY+=(target-currentY)*(1-Math.exp(-dt*10));
+          walker.style.transform='translate3d('+x+'px,'+currentY+'px,0) scaleX('+dir+')';
+          requestAnimationFrame(animate);
+        }
+        measure();
+        new ResizeObserver(measure).observe(phrase);
+        document.fonts.ready.then(measure);
+        requestAnimationFrame(animate);
+      </script>
+    </body></html>
+    """,
+    height=202,
+    scrolling=False,
 )
+
 st.markdown(
     '<div class="hero-copy">Um espaço simples para organizar ideias, entender '
     'conteúdos e ajustar a escrita. Cole seu texto, escolha uma ação e pronto.</div>',
