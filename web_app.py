@@ -1,6 +1,7 @@
 """Interface web do assistente de texto."""
 import os
 import time
+import logging
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -12,6 +13,7 @@ from demo import EXAMPLES, demo_response
 from provider import MAX_CHARS, generate_text
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 try:
     for name in ("GROQ_API_KEY", "GROQ_MODEL", "OPENAI_API_KEY", "OPENAI_MODEL"):
         if name in st.secrets and name not in os.environ:
@@ -350,12 +352,26 @@ if submitted:
                 result = generate_text(choices[action], user_text, provider)
             source = "Groq · IA real" if provider == "groq" else "OpenAI · IA real"
             st.session_state.history.insert(0, (action, result, source))
-        except RateLimitError:
-            st.error("O serviço atingiu seu limite gratuito. Tente novamente mais tarde.")
-        except (APITimeoutError, APIConnectionError):
-            st.error("Não foi possível conectar ao modelo. Tente novamente.")
-        except APIStatusError:
-            st.error("O serviço de IA está indisponível no momento.")
+        except RateLimitError as exc:
+            logger.warning("Limite da API atingido: HTTP %s", exc.status_code)
+            st.error("O limite de uso da IA foi atingido. Aguarde alguns minutos e tente novamente.")
+        except (APITimeoutError, APIConnectionError) as exc:
+            logger.warning("Falha de conexão com a IA: %s", type(exc).__name__)
+            st.error("Não foi possível conectar à IA. Verifique sua conexão e tente novamente.")
+        except APIStatusError as exc:
+            logger.warning("Falha da API %s: HTTP %s", provider, exc.status_code)
+            if exc.status_code == 400:
+                st.error("A solicitação foi recusada pelo modelo de IA. O responsável pelo site precisa verificar a configuração do modelo.")
+            elif exc.status_code in (401, 403):
+                st.error("A autenticação do serviço de IA falhou. O responsável pelo site precisa verificar a chave de acesso.")
+            elif exc.status_code == 404:
+                st.error("O modelo de IA configurado não está disponível. O responsável pelo site precisa atualizar o modelo.")
+            elif exc.status_code == 422:
+                st.error("A IA não conseguiu processar esta solicitação. Tente um texto mais curto.")
+            elif exc.status_code >= 500:
+                st.error("O provedor de IA está com instabilidade. Tente novamente em alguns minutos.")
+            else:
+                st.error(f"O serviço de IA recusou a solicitação (código {exc.status_code}). Tente novamente mais tarde.")
         except ValueError as exc:
             st.error(str(exc))
 
