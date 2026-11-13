@@ -11,10 +11,10 @@ from app import build_messages
 MAX_CHARS = 4000
 
 
-def generate_text(task: str, text: str, provider: str = "groq", *, client=None) -> str:
+def generate_text(task: str, text: str, provider: str = "groq", *, client=None, summary_length: str = "Médio") -> str:
     if len(text) > MAX_CHARS:
         raise ValueError(f"O limite é de {MAX_CHARS} caracteres por texto.")
-    messages = build_messages(task, text)
+    messages = build_messages(task, text, summary_length=summary_length)
     if provider == "groq":
         key = os.getenv("GROQ_API_KEY", "").strip()
         model = os.getenv("GROQ_MODEL", "").strip() or GROQ_DEFAULT_MODEL
