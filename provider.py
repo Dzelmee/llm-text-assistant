@@ -33,13 +33,22 @@ def generate_text(task: str, text: str, provider: str = "groq", *, client=None, 
     # Um limite de 650 tokens pode encerrar a geração antes do conteúdo visível.
     token_budget = 2048 if provider == "groq" else 650
 
-    def request(selected_model: str, budget: int):
-        return client.chat.completions.create(
-            model=selected_model,
-            messages=messages,
-            temperature=0.3,
-            max_completion_tokens=budget,
-        )
+    def request(selected_model: str, budget: int, *, retry: bool = False):
+        request_messages = messages
+        if retry:
+            request_messages = messages + [{
+                "role": "user",
+                "content": "Responda diretamente com o texto final solicitado, sem explicações sobre seu raciocínio.",
+            }]
+        params = {
+            "model": selected_model,
+            "messages": request_messages,
+            "temperature": 0.3,
+            "max_completion_tokens": budget,
+        }
+        if provider == "groq" and selected_model.startswith("openai/gpt-oss"):
+            params["extra_body"] = {"reasoning_effort": "low"}
+        return client.chat.completions.create(**params)
 
     try:
         response = request(model, token_budget)
@@ -52,11 +61,14 @@ def generate_text(task: str, text: str, provider: str = "groq", *, client=None, 
 
     choice = response.choices[0]
     result = choice.message.content
-    if (not result or not result.strip()) and provider == "groq" and choice.finish_reason == "length":
-        logger.warning("Geração Groq atingiu o limite de tokens sem resposta visível; tentando orçamento maior")
-        response = request(model, 4096)
+    if (not isinstance(result, str) or not result.strip()) and provider == "groq":
+        logger.warning(
+            "Groq retornou resposta vazia; modelo=%s, finish_reason=%s. Tentando uma vez novamente.",
+            model, choice.finish_reason,
+        )
+        response = request(model, 4096, retry=True)
         result = response.choices[0].message.content
 
-    if not result or not result.strip():
-        raise ValueError("O modelo não retornou um texto. Tente novamente.")
+    if not isinstance(result, str) or not result.strip():
+        raise ValueError("A IA não conseguiu gerar um texto nesta tentativa. Aguarde alguns segundos e tente novamente.")
     return result.strip()

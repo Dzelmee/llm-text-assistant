@@ -23,7 +23,7 @@ def test_groq_response():
 def test_empty_response():
     client = Mock()
     client.chat.completions.create.return_value.choices = [Mock(message=Mock(content=""))]
-    with pytest.raises(ValueError, match="não retornou"):
+    with pytest.raises(ValueError, match="não conseguiu gerar"):
         generate_text("1", "Texto", client=client)
 
 def test_groq_404_tries_fallback(monkeypatch):
@@ -71,3 +71,16 @@ def test_groq_starts_with_larger_token_budget():
     ]
     assert generate_text("1", "Texto", client=client) == "Resumo."
     assert client.chat.completions.create.call_args.kwargs["max_completion_tokens"] == 2048
+
+def test_groq_retries_empty_response_even_when_finished():
+    client = Mock()
+    client.chat.completions.create.side_effect = [
+        Mock(choices=[Mock(message=Mock(content=None), finish_reason="stop")]),
+        Mock(choices=[Mock(message=Mock(content="Resumo final."), finish_reason="stop")]),
+    ]
+    assert generate_text("1", "Texto", client=client, summary_length="Curto") == "Resumo final."
+    assert client.chat.completions.create.call_count == 2
+    second = client.chat.completions.create.call_args.kwargs
+    assert second["max_completion_tokens"] == 4096
+    assert second["extra_body"]["reasoning_effort"] == "low"
+    assert "Responda diretamente" in second["messages"][-1]["content"]
