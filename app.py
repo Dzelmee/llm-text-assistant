@@ -12,14 +12,26 @@ TASKS = {
 }
 
 
-def build_messages(task: str, text: str) -> list[dict[str, str]]:
+SUMMARY_LENGTHS = {
+    "Curto": "Escreva um resumo breve, em um único parágrafo de até 70 palavras.",
+    "Médio": "Escreva um resumo de 100 a 150 palavras, priorizando as informações essenciais.",
+    "Detalhado": "Escreva um resumo de 200 a 300 palavras, organizado por tópicos e preservando os dados relevantes.",
+}
+
+
+def build_messages(task: str, text: str, summary_length: str = "Médio") -> list[dict[str, str]]:
     if task not in TASKS:
         raise ValueError("Opção inválida")
     if not text.strip():
         raise ValueError("O texto não pode estar vazio")
+    if task == "1" and summary_length not in SUMMARY_LENGTHS:
+        raise ValueError("Tamanho de resumo inválido.")
+    instruction = TASKS[task]
+    if task == "1":
+        instruction += " " + SUMMARY_LENGTHS[summary_length]
     return [
         {"role": "system", "content": "Você é um assistente de texto objetivo. Não invente fatos."},
-        {"role": "user", "content": f"{TASKS[task]}\n\nTexto:\n{text.strip()}"},
+        {"role": "user", "content": f"{instruction}\n\nTexto:\n{text.strip()}"},
     ]
 
 
