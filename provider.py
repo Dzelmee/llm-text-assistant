@@ -29,18 +29,34 @@ def generate_text(task: str, text: str, provider: str = "groq", *, client=None, 
         raise ValueError("Serviço de IA ainda não configurado pelo responsável pelo site.")
     if client is None:
         client = OpenAI(api_key=key, base_url=url, timeout=30.0, max_retries=0)
-    try:
-        response = client.chat.completions.create(
-            model=model, messages=messages, temperature=0.3, max_tokens=650
+    # GPT-OSS usa parte do orçamento para raciocínio antes de gerar a resposta.
+    # Um limite de 650 tokens pode encerrar a geração antes do conteúdo visível.
+    token_budget = 2048 if provider == "groq" else 650
+
+    def request(selected_model: str, budget: int):
+        return client.chat.completions.create(
+            model=selected_model,
+            messages=messages,
+            temperature=0.3,
+            max_completion_tokens=budget,
         )
+
+    try:
+        response = request(model, token_budget)
     except NotFoundError:
         if provider != "groq" or model == GROQ_FALLBACK_MODEL:
             raise
         logger.warning("Modelo Groq indisponível (%s); tentando modelo alternativo", model)
-        response = client.chat.completions.create(
-            model=GROQ_FALLBACK_MODEL, messages=messages, temperature=0.3, max_tokens=650
-        )
-    result = response.choices[0].message.content
+        model = GROQ_FALLBACK_MODEL
+        response = request(model, token_budget)
+
+    choice = response.choices[0]
+    result = choice.message.content
+    if (not result or not result.strip()) and provider == "groq" and choice.finish_reason == "length":
+        logger.warning("Geração Groq atingiu o limite de tokens sem resposta visível; tentando orçamento maior")
+        response = request(model, 4096)
+        result = response.choices[0].message.content
+
     if not result or not result.strip():
         raise ValueError("O modelo não retornou um texto. Tente novamente.")
     return result.strip()

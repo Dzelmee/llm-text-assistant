@@ -52,3 +52,22 @@ def test_groq_fallback_404_is_not_retried(monkeypatch):
     with pytest.raises(NotFoundError):
         generate_text("1", "Texto", client=client)
     assert client.chat.completions.create.call_count == 1
+
+def test_groq_retries_empty_truncated_response():
+    client = Mock()
+    client.chat.completions.create.side_effect = [
+        Mock(choices=[Mock(message=Mock(content=""), finish_reason="length")]),
+        Mock(choices=[Mock(message=Mock(content="Resumo curto."), finish_reason="stop")]),
+    ]
+    assert generate_text("1", "Texto de exemplo", client=client, summary_length="Curto") == "Resumo curto."
+    assert client.chat.completions.create.call_count == 2
+    assert client.chat.completions.create.call_args.kwargs["max_completion_tokens"] == 4096
+
+
+def test_groq_starts_with_larger_token_budget():
+    client = Mock()
+    client.chat.completions.create.return_value.choices = [
+        Mock(message=Mock(content="Resumo."), finish_reason="stop")
+    ]
+    assert generate_text("1", "Texto", client=client) == "Resumo."
+    assert client.chat.completions.create.call_args.kwargs["max_completion_tokens"] == 2048
