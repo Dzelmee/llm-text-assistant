@@ -4,8 +4,8 @@ from openai import OpenAI, NotFoundError
 import logging
 
 logger = logging.getLogger(__name__)
-GROQ_DEFAULT_MODEL = "llama-3.1-8b-instant"
-GROQ_FALLBACK_MODEL = "llama-3.3-70b-versatile"
+GROQ_DEFAULT_MODEL = "openai/gpt-oss-20b"
+GROQ_FALLBACK_MODEL = "openai/gpt-oss-120b"
 from app import build_messages
 
 MAX_CHARS = 4000
