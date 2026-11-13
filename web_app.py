@@ -1,14 +1,22 @@
 """Interface web do assistente de texto."""
 import os
+import time
 
 import streamlit as st
 from dotenv import load_dotenv
-from openai import OpenAI, OpenAIError
+from openai import APIConnectionError, APIStatusError, APITimeoutError, RateLimitError
 
 from app import build_messages
 from demo import EXAMPLES, demo_response
+from provider import MAX_CHARS, generate_text
 
 load_dotenv()
+try:
+    for name in ("GROQ_API_KEY", "GROQ_MODEL", "OPENAI_API_KEY", "OPENAI_MODEL"):
+        if name in st.secrets and name not in os.environ:
+            os.environ[name] = str(st.secrets[name])
+except FileNotFoundError:
+    pass
 st.set_page_config(page_title="Texto — assistente de escrita", page_icon="✍️", layout="centered")
 
 st.markdown(
@@ -69,9 +77,12 @@ choices = {
     "Explicar de forma simples": "2",
     "Revisar a escrita": "3",
 }
+mode_options = ["IA gratuita (Groq)", "Demonstração gratuita"]
+if os.getenv("OPENAI_API_KEY", "").strip():
+    mode_options.append("OpenAI API")
 mode = st.radio(
     "Modo de uso",
-    ["Demonstração gratuita", "OpenAI API"],
+    mode_options,
     horizontal=True,
     help="O modo demonstração usa respostas fixas e não faz chamadas à API.",
 )
@@ -82,8 +93,12 @@ if is_demo:
         "Modo demonstração: os resultados são exemplos predefinidos, "
         "não respostas geradas por inteligência artificial. Nenhuma chamada à API é feita."
     )
+elif mode == "IA gratuita (Groq)":
+    st.caption("Use seus próprios textos com IA real. Serviço gratuito sujeito a limites de uso.")
+    if not os.getenv("GROQ_API_KEY", "").strip():
+        st.warning("A integração gratuita ainda não foi configurada pelo responsável pelo site.")
 else:
-    st.caption("Modo IA real: exige chave e créditos disponíveis na API da OpenAI.")
+    st.caption("Modo OpenAI: exige chave e créditos disponíveis na API.")
 
 with st.form("assistant_form"):
     action = st.selectbox("O que você precisa?", list(choices))
@@ -95,9 +110,9 @@ with st.form("assistant_form"):
         user_text = st.text_area(
             "Texto",
             height=220,
-            max_chars=12000,
+            max_chars=MAX_CHARS,
             placeholder="Escreva ou cole seu texto aqui...",
-            help="Até 12.000 caracteres.",
+            help=f"Até {MAX_CHARS} caracteres.",
         )
     submitted = st.form_submit_button(
         "Ver exemplo" if is_demo else "Processar texto",
@@ -107,6 +122,10 @@ with st.form("assistant_form"):
 
 if "history" not in st.session_state:
     st.session_state.history = []
+if "last_request" not in st.session_state:
+    st.session_state.last_request = 0.0
+if "request_count" not in st.session_state:
+    st.session_state.request_count = 0
 
 if submitted:
     if is_demo:
@@ -114,29 +133,27 @@ if submitted:
         st.session_state.history.insert(0, (action, result, "Demonstração · resposta fixa"))
     elif not user_text.strip():
         st.warning("Adicione um texto para continuar.")
-    elif not os.getenv("OPENAI_API_KEY"):
-        st.error("Falta configurar OPENAI_API_KEY no arquivo .env.")
+    elif time.monotonic() - st.session_state.last_request < 15:
+        st.warning("Aguarde 15 segundos entre solicitações.")
+    elif st.session_state.request_count >= 15:
+        st.warning("Você atingiu o limite desta sessão.")
+    elif mode == "IA gratuita (Groq)" and not os.getenv("GROQ_API_KEY", "").strip():
+        st.error("A integração gratuita ainda não está configurada.")
     else:
+        st.session_state.last_request = time.monotonic()
+        st.session_state.request_count += 1
         try:
-            messages = build_messages(choices[action], user_text)
+            provider = "groq" if mode == "IA gratuita (Groq)" else "openai"
             with st.spinner("Preparando resultado..."):
-                response = OpenAI(
-                    api_key=os.environ["OPENAI_API_KEY"], timeout=30.0
-                ).chat.completions.create(
-                    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-                    messages=messages,
-                    temperature=0.3,
-                )
-            result = response.choices[0].message.content or "Nenhum conteúdo retornado."
-            st.session_state.history.insert(0, (action, result, "OpenAI API · resposta gerada"))
-        except OpenAIError as exc:
-            if getattr(exc, "status_code", None) == 429:
-                st.error(
-                    "A API retornou um limite de uso ou falta de créditos. "
-                    "Você pode continuar usando o modo demonstração gratuitamente."
-                )
-            else:
-                st.error("Não foi possível consultar a API. Confira sua configuração e tente novamente.")
+                result = generate_text(choices[action], user_text, provider)
+            source = "Groq · IA real" if provider == "groq" else "OpenAI · IA real"
+            st.session_state.history.insert(0, (action, result, source))
+        except RateLimitError:
+            st.error("O serviço atingiu seu limite gratuito. Tente novamente mais tarde.")
+        except (APITimeoutError, APIConnectionError):
+            st.error("Não foi possível conectar ao modelo. Tente novamente.")
+        except APIStatusError:
+            st.error("O serviço de IA está indisponível no momento.")
         except ValueError as exc:
             st.error(str(exc))
 
@@ -154,6 +171,6 @@ if st.session_state.history:
 
 st.markdown(
     '<div class="footer-note">Projeto pessoal desenvolvido em Python + Streamlit. '
-    'O modo demonstração usa exemplos fixos. O histórico fica nesta sessão. O uso da API real pode gerar custos.</div>',
+    'Os textos são enviados ao provedor selecionado. Evite dados sensíveis. O histórico fica nesta sessão. O plano gratuito tem limites.</div>',
     unsafe_allow_html=True,
 )
