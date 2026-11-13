@@ -365,7 +365,7 @@ if submitted:
                 error_details = {}
             api_error_code = error_details.get("code")
             safe_code = str(api_error_code)[:80] if isinstance(api_error_code, (str, int)) else "não informado"
-            configured_model = (os.getenv("GROQ_MODEL", "").strip() or "llama-3.1-8b-instant") if provider == "groq" else (os.getenv("OPENAI_MODEL", "").strip() or "gpt-4o-mini")
+            configured_model = (os.getenv("GROQ_MODEL", "").strip() or "openai/gpt-oss-20b") if provider == "groq" else (os.getenv("OPENAI_MODEL", "").strip() or "gpt-4o-mini")
             logger.warning("Falha da API %s: HTTP %s, modelo %s, código %s",
                            provider, exc.status_code, configured_model, safe_code)
             if exc.status_code == 400:
@@ -375,7 +375,7 @@ if submitted:
             elif exc.status_code == 404:
                 st.error("A Groq retornou HTTP 404 mesmo após a tentativa com o modelo alternativo. Confira a configuração do serviço.")
                 with st.expander("Detalhes para diagnóstico"):
-                    st.code(f"HTTP: {exc.status_code}\\nModelo configurado: {configured_model}\\nModelo alternativo: llama-3.3-70b-versatile\\nCódigo da API: {safe_code}", language=None)
+                    st.code(f"HTTP: {exc.status_code}\\nModelo configurado: {configured_model}\\nModelo alternativo: openai/gpt-oss-120b\\nCódigo da API: {safe_code}", language=None)
                     st.caption("Esses dados não incluem sua chave de API nem o texto enviado.")
             elif exc.status_code == 422:
                 st.error("A IA não conseguiu processar esta solicitação. Tente um texto mais curto.")
