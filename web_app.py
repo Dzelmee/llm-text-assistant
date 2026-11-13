@@ -359,13 +359,24 @@ if submitted:
             logger.warning("Falha de conexão com a IA: %s", type(exc).__name__)
             st.error("Não foi possível conectar à IA. Verifique sua conexão e tente novamente.")
         except APIStatusError as exc:
-            logger.warning("Falha da API %s: HTTP %s", provider, exc.status_code)
+            error_body = exc.body if isinstance(exc.body, dict) else {}
+            error_details = error_body.get("error", {})
+            if not isinstance(error_details, dict):
+                error_details = {}
+            api_error_code = error_details.get("code")
+            safe_code = str(api_error_code)[:80] if isinstance(api_error_code, (str, int)) else "não informado"
+            configured_model = (os.getenv("GROQ_MODEL", "").strip() or "llama-3.1-8b-instant") if provider == "groq" else (os.getenv("OPENAI_MODEL", "").strip() or "gpt-4o-mini")
+            logger.warning("Falha da API %s: HTTP %s, modelo %s, código %s",
+                           provider, exc.status_code, configured_model, safe_code)
             if exc.status_code == 400:
                 st.error("A solicitação foi recusada pelo modelo de IA. O responsável pelo site precisa verificar a configuração do modelo.")
             elif exc.status_code in (401, 403):
                 st.error("A autenticação do serviço de IA falhou. O responsável pelo site precisa verificar a chave de acesso.")
             elif exc.status_code == 404:
-                st.error("O modelo de IA configurado não está disponível. O responsável pelo site precisa atualizar o modelo.")
+                st.error("A Groq retornou HTTP 404 mesmo após a tentativa com o modelo alternativo. Confira a configuração do serviço.")
+                with st.expander("Detalhes para diagnóstico"):
+                    st.code(f"HTTP: {exc.status_code}\\nModelo configurado: {configured_model}\\nModelo alternativo: llama-3.3-70b-versatile\\nCódigo da API: {safe_code}", language=None)
+                    st.caption("Esses dados não incluem sua chave de API nem o texto enviado.")
             elif exc.status_code == 422:
                 st.error("A IA não conseguiu processar esta solicitação. Tente um texto mais curto.")
             elif exc.status_code >= 500:
