@@ -84,7 +84,7 @@ mode = st.radio(
     "Modo de uso",
     mode_options,
     horizontal=True,
-    help="O modo demonstração usa respostas fixas e não faz chamadas à API.",
+    help="A IA gratuita usa uma API com cotas; a demonstração mostra respostas fixas.",
 )
 is_demo = mode == "Demonstração gratuita"
 
@@ -103,7 +103,7 @@ else:
 with st.form("assistant_form"):
     action = st.selectbox("O que você precisa?", list(choices))
     if is_demo:
-        st.caption("Exemplo preenchido automaticamente. Para usar um texto próprio, selecione OpenAI API.")
+        st.caption("Exemplo preenchido automaticamente. Para usar um texto próprio, selecione IA gratuita (Groq).")
         st.code(EXAMPLES[choices[action]]["input"], language=None, wrap_lines=True)
         user_text = EXAMPLES[choices[action]]["input"]
     else:
