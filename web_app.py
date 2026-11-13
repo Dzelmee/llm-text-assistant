@@ -8,47 +8,114 @@ from openai import OpenAI, OpenAIError
 from app import build_messages
 
 load_dotenv()
-st.set_page_config(page_title="LLM Text Assistant", page_icon="🧠", layout="centered")
-st.title("LLM Text Assistant")
-st.caption("Resuma, explique ou revise textos com inteligência artificial.")
-st.write("Projeto em Python para praticar integração com modelos de linguagem via API.")
+st.set_page_config(page_title="Texto — assistente de escrita", page_icon="✍️", layout="centered")
 
-choices = {"Resumir": "1", "Explicar": "2", "Revisar escrita": "3"}
+st.markdown(
+    """
+    <style>
+    :root { color-scheme: dark; }
+    .stApp { background: #10131a; color: #e8eaf0; }
+    .block-container { max-width: 850px; padding-top: 3.4rem; padding-bottom: 3rem; }
+    header[data-testid="stHeader"] { background: transparent; }
+    #MainMenu, footer { visibility: hidden; }
+    .eyebrow { color: #9da9bb; font-size: .76rem; letter-spacing: .19em; font-weight: 700; }
+    .hero-title { font-size: clamp(2.4rem, 6vw, 4.1rem); line-height: 1.08;
+                  font-weight: 750; letter-spacing: -.055em; margin: .9rem 0 .8rem; }
+    .hero-title span { color: #a9c2f4; }
+    .hero-copy { color: #aab4c4; font-size: 1.06rem; max-width: 580px;
+                 line-height: 1.7; margin-bottom: 1.9rem; }
+    .section-kicker { color: #c6d0df; font-size: .9rem; font-weight: 650;
+                      margin: 1.3rem 0 .4rem; }
+    .stTextArea textarea, [data-baseweb="select"] > div {
+        background: #181e29 !important; border: 1px solid #30394a !important;
+        border-radius: 12px !important; color: #f3f5f8 !important;
+    }
+    .stTextArea textarea:focus { border-color: #93b7ff !important; }
+    .stForm { border: 1px solid #30394a; border-radius: 18px;
+              background: #151a23; padding: 1.25rem; }
+    .stButton button[kind="primary"], .stFormSubmitButton button {
+        border-radius: 10px; font-weight: 650; min-height: 44px;
+    }
+    .stFormSubmitButton button { background: #b8d0ff; color: #101827; border: 0; }
+    .stFormSubmitButton button:hover { background: #d4e2ff; color: #101827; }
+    [data-testid="stExpander"] { background: #171d27; border: 1px solid #30394a;
+                                  border-radius: 12px; }
+    .footer-note { color: #8996a9; font-size: .83rem; line-height: 1.6;
+                   margin-top: 2.5rem; border-top: 1px solid #30394a;
+                   padding-top: 1.3rem; }
+    @media (max-width: 640px) {
+        .block-container { padding-top: 2rem; }
+        .hero-copy { font-size: .98rem; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown('<div class="eyebrow">TEXTO / FERRAMENTA DE ESCRITA</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="hero-title">Boas ideias merecem<br><span>palavras melhores.</span></div>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    '<div class="hero-copy">Um espaço simples para organizar ideias, entender '
+    'conteúdos e ajustar a escrita. Cole seu texto, escolha uma ação e pronto.</div>',
+    unsafe_allow_html=True,
+)
+
+choices = {
+    "Resumir": "1",
+    "Explicar de forma simples": "2",
+    "Revisar a escrita": "3",
+}
 with st.form("assistant_form"):
-    action = st.selectbox("O que você quer fazer?", list(choices))
-    text = st.text_area("Seu texto", height=200, max_chars=12000, placeholder="Cole um texto aqui...")
-    submitted = st.form_submit_button("Gerar resposta", type="primary")
+    action = st.selectbox("O que você precisa?", list(choices))
+    user_text = st.text_area(
+        "Texto",
+        height=220,
+        max_chars=12000,
+        placeholder="Escreva ou cole seu texto aqui...",
+        help="Até 12.000 caracteres.",
+    )
+    submitted = st.form_submit_button("Processar texto", type="primary", use_container_width=True)
 
 if "history" not in st.session_state:
     st.session_state.history = []
 
 if submitted:
-    if not text.strip():
-        st.warning("Digite um texto para continuar.")
+    if not user_text.strip():
+        st.warning("Adicione um texto para continuar.")
     elif not os.getenv("OPENAI_API_KEY"):
-        st.error("Configure OPENAI_API_KEY no arquivo .env para usar o assistente.")
+        st.error("Falta configurar OPENAI_API_KEY no arquivo .env.")
     else:
         try:
-            messages = build_messages(choices[action], text)
-            with st.spinner("Processando texto..."):
-                client = OpenAI(api_key=os.environ["OPENAI_API_KEY"], timeout=30.0)
-                response = client.chat.completions.create(
+            messages = build_messages(choices[action], user_text)
+            with st.spinner("Preparando resultado..."):
+                response = OpenAI(
+                    api_key=os.environ["OPENAI_API_KEY"], timeout=30.0
+                ).chat.completions.create(
                     model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                     messages=messages,
                     temperature=0.3,
                 )
-            result = response.choices[0].message.content or "O modelo não retornou conteúdo."
+            result = response.choices[0].message.content or "Nenhum conteúdo retornado."
             st.session_state.history.insert(0, (action, result))
+            st.session_state.history = st.session_state.history[:10]
         except (OpenAIError, ValueError) as exc:
-            st.error(f"Não foi possível gerar a resposta: {exc}")
+            st.error(f"Não foi possível processar o texto: {exc}")
 
 if st.session_state.history:
-    st.subheader("Resultados desta sessão")
+    st.markdown('<div class="section-kicker">Resultados recentes</div>', unsafe_allow_html=True)
     for index, (action, result) in enumerate(st.session_state.history):
-        with st.expander(f"{action} · Resultado {len(st.session_state.history) - index}", expanded=index == 0):
+        with st.expander(f"{action} · {index + 1}", expanded=index == 0):
             st.write(result)
-    if st.button("Limpar histórico"):
+            st.code(result, language=None)
+    if st.button("Limpar resultados", type="secondary"):
         st.session_state.history = []
         st.rerun()
 
-st.caption("O histórico fica apenas na sessão atual. A API pode gerar custos.")
+st.markdown(
+    '<div class="footer-note">Projeto pessoal desenvolvido em Python + Streamlit. '
+    'Os resultados ficam apenas nesta sessão. O uso da API pode gerar custos.</div>',
+    unsafe_allow_html=True,
+)
