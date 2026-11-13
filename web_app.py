@@ -73,13 +73,14 @@ st.markdown(
     .hero-title { font-size: clamp(1.4rem, 5.8vw, 4.1rem); line-height: 1.08;
                   font-weight: 750; letter-spacing: -.055em; margin: .75rem 0 .8rem; }
     .hero-title span { color: #c2d6ad; }
+    .hero-title .walking-mascot { color: initial; }
     .hero-first-line { display: block; position: relative; width: fit-content;
                        max-width: 100%; white-space: nowrap; margin-top: 4.4rem; }
     .hero-first-line .headline-text { color: #f1eee6; }
     .walking-mascot { position: absolute; width: 38px; height: 54px;
                       bottom: calc(100% - .12em); left: 0; pointer-events: none;
                       z-index: 3; transform-origin: center bottom;
-                      animation: mascot-route 16s linear infinite; }
+                      animation: mascot-route 16s linear infinite !important; }
     .walking-mascot .wm-head { position: absolute; top: 3px; left: 3px;
                                width: 32px; height: 32px; border-radius: 13px;
                                background: #bdd5a9; z-index: 4; }
@@ -101,7 +102,7 @@ st.markdown(
     .walking-mascot .wm-arm, .walking-mascot .wm-leg {
         position: absolute; width: 5px; background: #bdd5a9;
         border-radius: 4px; transform-origin: top center;
-        animation: mascot-step .55s ease-in-out infinite alternate;
+        animation: mascot-step .55s ease-in-out infinite alternate !important;
     }
     .walking-mascot .wm-arm { top: 35px; height: 10px; }
     .walking-mascot .wm-leg { top: 43px; height: 11px; background: #91ac86; }
@@ -191,7 +192,6 @@ st.markdown(
     @media (prefers-reduced-motion: reduce) {
         .stApp::before, .stApp::after, .block-container::before { animation: none; }
         .mascot, .mascot:before, .mascot:after { animation: none; }
-        .walking-mascot, .walking-mascot .wm-arm, .walking-mascot .wm-leg { animation: none; }
         div[data-testid="stRadio"] label { transition: none; }
     }
     @media (max-width: 640px) {
