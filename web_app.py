@@ -28,7 +28,45 @@ st.markdown(
                     #151a17;
         color: #f1eee6;
     }
-    .block-container { max-width: 850px; padding-top: 3rem; padding-bottom: 3rem; }
+    /* Ambient atmosphere: pure CSS, fixed behind the content. */
+    .stApp { isolation: isolate; }
+    .stApp::before, .stApp::after {
+        content: ""; position: fixed; pointer-events: none;
+        z-index: -1; border-radius: 50%;
+        filter: blur(65px); opacity: .35;
+        animation: ambient-drift 22s ease-in-out infinite alternate;
+    }
+    .stApp::before {
+        width: min(52vw, 650px); height: min(52vw, 650px);
+        left: -17vw; top: 13vh;
+        background: radial-gradient(circle, #526b48 0%, transparent 70%);
+    }
+    .stApp::after {
+        width: min(58vw, 720px); height: min(58vw, 720px);
+        right: -19vw; top: -12vh;
+        background: radial-gradient(circle, #526d57 0%, transparent 70%);
+        animation-delay: -9s; animation-duration: 29s;
+    }
+    .block-container { max-width: 850px; padding-top: 3rem; padding-bottom: 3rem;
+                       position: relative; }
+    .block-container::before {
+        content: ""; position: fixed; pointer-events: none; z-index: -1;
+        width: min(40vw, 470px); height: min(40vw, 470px);
+        right: 4vw; bottom: -22vh; border-radius: 50%;
+        background: radial-gradient(circle, #877f51 0%, transparent 70%);
+        filter: blur(65px); opacity: .18;
+        animation: ambient-drift 31s ease-in-out infinite alternate-reverse;
+    }
+    .block-container::after {
+        content: ""; position: fixed; pointer-events: none; z-index: -1; inset: 0;
+        background-image: radial-gradient(#b9c9a5 0.65px, transparent 0.65px);
+        background-size: 26px 26px; opacity: .055;
+        mask-image: linear-gradient(90deg, black, transparent 45%, transparent 60%, black);
+    }
+    @keyframes ambient-drift {
+        from { transform: translate3d(-15px, 10px, 0) scale(1); }
+        to { transform: translate3d(55px, -35px, 0) scale(1.15); }
+    }
     header[data-testid="stHeader"] { background: transparent; }
     #MainMenu, footer { visibility: hidden; }
     .eyebrow { color: #b4c8ac; font-size: .74rem; letter-spacing: .19em; font-weight: 750; }
@@ -88,7 +126,7 @@ st.markdown(
                               50% { transform: translateY(-7px) rotate(-2deg); } }
     @keyframes mascot-blink { 0%,44%,48%,100% { transform: scaleY(1); }
                               46% { transform: scaleY(.12); } }
-    @media (prefers-reduced-motion: reduce) {
+    @media (prefers-reduced-motion: reduce) {\n        .stApp::before, .stApp::after, .block-container::before { animation: none; }
         .mascot, .mascot:before, .mascot:after { animation: none; }
         div[data-testid="stRadio"] label { transition: none; }
     }
