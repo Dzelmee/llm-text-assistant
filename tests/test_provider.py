@@ -25,3 +25,30 @@ def test_empty_response():
     client.chat.completions.create.return_value.choices = [Mock(message=Mock(content=""))]
     with pytest.raises(ValueError, match="não retornou"):
         generate_text("1", "Texto", client=client)
+
+def test_groq_404_tries_fallback(monkeypatch):
+    from openai import NotFoundError
+    from provider import GROQ_FALLBACK_MODEL
+    monkeypatch.setenv("GROQ_MODEL", "old-model")
+    client = Mock()
+    response = Mock(status_code=404)
+    client.chat.completions.create.side_effect = [
+        NotFoundError("Model not found", response=response, body=None),
+        Mock(choices=[Mock(message=Mock(content="Resumo alternativo"))]),
+    ]
+    assert generate_text("1", "Texto de exemplo", client=client) == "Resumo alternativo"
+    assert client.chat.completions.create.call_count == 2
+    assert client.chat.completions.create.call_args.kwargs["model"] == GROQ_FALLBACK_MODEL
+
+
+def test_groq_fallback_404_is_not_retried(monkeypatch):
+    from openai import NotFoundError
+    from provider import GROQ_FALLBACK_MODEL
+    monkeypatch.setenv("GROQ_MODEL", GROQ_FALLBACK_MODEL)
+    client = Mock()
+    client.chat.completions.create.side_effect = NotFoundError(
+        "Model not found", response=Mock(status_code=404), body=None
+    )
+    with pytest.raises(NotFoundError):
+        generate_text("1", "Texto", client=client)
+    assert client.chat.completions.create.call_count == 1
