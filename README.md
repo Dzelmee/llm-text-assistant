@@ -1,38 +1,36 @@
-# Texto. — Assistente de escrita
+# Texto.
 
-Aplicação web para resumir, explicar e revisar textos com modelos de linguagem. A proposta é oferecer uma ferramenta simples, acessível pelo navegador, com foco em clareza e experiência de uso.
+Criei o **Texto.** para reunir três tarefas de escrita em um só lugar: resumir, explicar e revisar textos. Queria uma ferramenta que fosse simples de abrir e usar, sem exigir instalação nem cadastro.
 
-**[Acessar o aplicativo](https://llm-text-assistant-dzelmee.streamlit.app/)** · **[Código-fonte](https://github.com/Dzelmee/llm-text-assistant)**
+**[Testar o Texto.](https://llm-text-assistant-dzelmee.streamlit.app/)**
 
-## Funcionalidades
+## O que dá para fazer
 
-- **Resumir:** destaca as informações essenciais de um texto.
-- **Explicar:** apresenta conteúdos em uma linguagem mais simples.
-- **Revisar:** melhora a escrita, preservando o sentido original.
-- **Histórico temporário:** permite consultar os resultados durante a sessão.
-- **Modo demonstração:** apresenta exemplos fixos sem consumir a API.
+- **Resumir:** escolher entre um resumo curto, médio ou detalhado.
+- **Explicar:** reescrever um conteúdo em linguagem mais simples.
+- **Revisar:** melhorar a escrita sem perder a ideia original.
+- **Consultar resultados:** ver as últimas respostas da sessão e copiar o texto.
+- **Experimentar sem API:** usar o modo demonstração com exemplos prontos.
 
-A interface utiliza uma paleta verde-sálvia, animações discretas em CSS e um mascote criado com elementos visuais da própria página.
+Também trabalhei na identidade visual: cores suaves, layout responsivo e um pequeno mascote que acompanha as letras do título. Para essa animação, usei JavaScript dentro de um componente HTML incorporado ao Streamlit.
 
 ## Tecnologias
 
-- **Python:** lógica da aplicação e validação de entradas.
-- **Streamlit:** interface web e gerenciamento da sessão.
-- **GroqCloud + Llama:** processamento de textos com um modelo de linguagem.
-- **OpenAI API:** provedor alternativo, opcional.
-- **pytest:** testes automatizados.
-- **GitHub Actions:** verificação de sintaxe e execução dos testes.
-- **CSS:** identidade visual, responsividade e animações.
+- **Python e Streamlit:** interface, fluxo das ações e estado da sessão.
+- **Groq API:** geração de respostas com o modelo `openai/gpt-oss-20b`; há uma tentativa alternativa com `openai/gpt-oss-120b` se o modelo configurado não for encontrado.
+- **HTML, CSS e JavaScript:** estilo, responsividade e animação do mascote.
+- **OpenAI API:** opção adicional, configurada separadamente.
+- **pytest e GitHub Actions:** testes automatizados e verificações do repositório.
 
-## Como funciona
+## Como o projeto funciona
 
-O usuário escolhe uma ação, insere um texto e envia a solicitação. A aplicação valida a entrada, prepara as instruções e consulta o provedor configurado. O resultado é exibido na interface e mantido apenas durante a sessão.
+Depois de escolher uma ação e enviar o texto, a aplicação valida a entrada, monta a instrução e chama a API selecionada. A resposta aparece formatada na página e fica disponível no histórico da sessão.
 
-O modo público utiliza a API Groq, sujeita aos limites do serviço gratuito. Quando a cota é atingida, a aplicação apresenta uma mensagem de indisponibilidade; não há troca automática para um serviço pago.
+Uma parte importante do desenvolvimento foi lidar com os erros da integração. Precisei atualizar modelos que deixaram de funcionar, distinguir falhas da API e ajustar o processamento de respostas vazias. Também acrescentei os três tamanhos de resumo e simplifiquei a forma de copiar os resultados.
 
-## Executar localmente
+## Rodar no computador
 
-Requisitos: Python 3.10 ou superior.
+É necessário ter **Python 3.10 ou superior**.
 
 ```bash
 git clone https://github.com/Dzelmee/llm-text-assistant.git
@@ -40,48 +38,49 @@ cd llm-text-assistant
 python -m venv .venv
 ```
 
-Ative o ambiente virtual:
+Ative o ambiente virtual no Windows (PowerShell):
 
 ```powershell
-# Windows / PowerShell
 .venv\Scripts\Activate.ps1
 ```
 
+Ou no Linux/macOS:
+
 ```bash
-# Linux / macOS
 source .venv/bin/activate
 ```
 
-Instale as dependências e inicie a aplicação:
+Instale as dependências e execute:
 
 ```bash
 pip install -r requirements.txt
 streamlit run web_app.py
 ```
 
-Para utilizar a IA localmente, copie `.env.example` para `.env` e configure a variável `GROQ_API_KEY`. O modo demonstração funciona sem chave.
+Para usar a IA, copie `.env.example` para `.env` e configure `GROQ_API_KEY`. Sem chave, ainda é possível abrir o modo demonstração.
 
-## Publicação no Streamlit Community Cloud
+## Publicar no Streamlit Community Cloud
 
-Utilize o repositório `Dzelmee/llm-text-assistant`, a branch `main` e o arquivo principal `web_app.py`.
+Configure o repositório `Dzelmee/llm-text-assistant`, a branch `main` e o arquivo principal `web_app.py`.
 
-Em **App settings → Secrets**, configure:
+Nas configurações de **Secrets**, use:
 
 ```toml
 GROQ_API_KEY = "sua_chave_groq"
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = "openai/gpt-oss-20b"
 ```
 
-Nunca publique chaves de API no repositório. O arquivo `.env` e os secrets locais estão incluídos no `.gitignore`.
+Nunca coloque chaves reais no GitHub. O `.env` está ignorado pelo Git.
 
 ## Limites e privacidade
 
-- Até **4.000 caracteres** por solicitação.
-- Intervalo mínimo de **15 segundos** entre solicitações.
-- Até **15 solicitações por sessão**.
-- Os controles por sessão não substituem um limite global contra abuso.
-- Os textos são enviados ao provedor selecionado para processamento. Evite dados sensíveis.
-- Não há armazenamento de histórico em banco de dados.
+- Máximo de **4.000 caracteres** por texto.
+- Intervalo de **15 segundos** entre solicitações.
+- Limite de **15 solicitações por sessão**.
+- O histórico fica na sessão do Streamlit; não há banco de dados para armazená-lo.
+- Os textos são enviados ao provedor de IA escolhido. Evite inserir informações sensíveis.
+
+Esses limites são por sessão e não substituem uma proteção global contra uso abusivo. A API gratuita da Groq também está sujeita aos limites do próprio serviço.
 
 ## Testes
 
@@ -89,11 +88,7 @@ Nunca publique chaves de API no repositório. O arquivo `.env` e os secrets loca
 python -m pytest -q
 ```
 
-Os testes usam respostas simuladas e não consomem créditos de API.
-
-## Desenvolvimento
-
-O projeto reúne integração com APIs de modelos de linguagem, tratamento de erros, gerenciamento de credenciais, validação de entradas, testes e publicação de uma aplicação Python na web.
+Os testes utilizam respostas simuladas, sem fazer chamadas reais às APIs.
 
 ---
 
