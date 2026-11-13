@@ -342,7 +342,7 @@ if "request_count" not in st.session_state:
 if submitted:
     if is_demo:
         result = demo_response(choices[action], user_text)
-        st.session_state.history.insert(0, (action, result, "Demonstração · resposta fixa"))
+        st.session_state.history.insert(0, (action, result, "Demonstração · resposta fixa" + (f" · {summary_length}" if action == "Resumir" else "")))
     elif not user_text.strip():
         st.warning("Adicione um texto para continuar.")
     elif time.monotonic() - st.session_state.last_request < 15:
@@ -359,7 +359,7 @@ if submitted:
             with st.spinner("Preparando resultado..."):
                 result = generate_text(choices[action], user_text, provider, summary_length=summary_length)
             source = "Groq · IA real" if provider == "groq" else "OpenAI · IA real"
-            st.session_state.history.insert(0, (action, result, source))
+            st.session_state.history.insert(0, (action, result, source + (f" · {summary_length}" if action == "Resumir" else "")))
         except RateLimitError as exc:
             logger.warning("Limite da API atingido: HTTP %s", exc.status_code)
             st.error("O limite de uso da IA foi atingido. Aguarde alguns minutos e tente novamente.")

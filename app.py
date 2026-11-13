@@ -29,6 +29,13 @@ def build_messages(task: str, text: str, summary_length: str = "Médio") -> list
     instruction = TASKS[task]
     if task == "1":
         instruction += " " + SUMMARY_LENGTHS[summary_length]
+        instruction += (
+            " Apresente números de maneira natural e legível em português brasileiro, "
+            "por exemplo, '850 mil habitantes' e 'R$ 4,8 bilhões', quando essa "
+            "representação corresponder exatamente ao valor informado. "
+            "Preserve quantidades, datas, porcentagens e unidades do texto original. "
+            "Não arredonde números, não invente valores e não altere a precisão dos dados."
+        )
     return [
         {"role": "system", "content": "Você é um assistente de texto objetivo. Não invente fatos."},
         {"role": "user", "content": f"{instruction}\n\nTexto:\n{text.strip()}"},
