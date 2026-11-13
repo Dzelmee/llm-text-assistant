@@ -70,9 +70,71 @@ st.markdown(
     header[data-testid="stHeader"] { background: transparent; }
     #MainMenu, footer { visibility: hidden; }
     .eyebrow { color: #b4c8ac; font-size: .74rem; letter-spacing: .19em; font-weight: 750; }
-    .hero-title { font-size: clamp(2.4rem, 6vw, 4.1rem); line-height: 1.08;
+    .hero-title { font-size: clamp(1.4rem, 5.8vw, 4.1rem); line-height: 1.08;
                   font-weight: 750; letter-spacing: -.055em; margin: .75rem 0 .8rem; }
     .hero-title span { color: #c2d6ad; }
+    .hero-first-line { display: block; position: relative; width: fit-content;
+                       max-width: 100%; white-space: nowrap; margin-top: 4.4rem; }
+    .hero-first-line .headline-text { color: #f1eee6; }
+    .walking-mascot { position: absolute; width: 38px; height: 54px;
+                      bottom: calc(100% - .12em); left: 0; pointer-events: none;
+                      z-index: 3; transform-origin: center bottom;
+                      animation: mascot-route 16s linear infinite; }
+    .walking-mascot .wm-head { position: absolute; top: 3px; left: 3px;
+                               width: 32px; height: 32px; border-radius: 13px;
+                               background: #bdd5a9; z-index: 4; }
+    .walking-mascot .wm-leaf { position: absolute; top: -4px; left: 19px;
+                               width: 9px; height: 14px; background: #8faa80;
+                               border-radius: 100% 0 100% 0; transform: rotate(-25deg);
+                               z-index: 5; }
+    .walking-mascot .wm-eye { position: absolute; top: 13px; width: 4px;
+                              height: 5px; border-radius: 50%; background: #263729;
+                              animation: mascot-blink 5s infinite; }
+    .walking-mascot .wm-eye:first-child { left: 9px; }
+    .walking-mascot .wm-eye:nth-child(2) { right: 9px; }
+    .walking-mascot .wm-smile { position: absolute; top: 21px; left: 12px;
+                                width: 9px; height: 5px; border-bottom: 2px solid #263729;
+                                border-radius: 50%; }
+    .walking-mascot .wm-body { position: absolute; top: 33px; left: 12px;
+                               width: 15px; height: 11px; border-radius: 7px;
+                               background: #91ac86; z-index: 2; }
+    .walking-mascot .wm-arm, .walking-mascot .wm-leg {
+        position: absolute; width: 5px; background: #bdd5a9;
+        border-radius: 4px; transform-origin: top center;
+        animation: mascot-step .55s ease-in-out infinite alternate;
+    }
+    .walking-mascot .wm-arm { top: 35px; height: 10px; }
+    .walking-mascot .wm-leg { top: 43px; height: 11px; background: #91ac86; }
+    .walking-mascot .wm-left.wm-arm { left: 9px; }
+    .walking-mascot .wm-right.wm-arm { right: 9px; animation-delay: -.55s; }
+    .walking-mascot .wm-left.wm-leg { left: 13px; }
+    .walking-mascot .wm-right.wm-leg { right: 13px; animation-delay: -.55s; }
+    @keyframes mascot-step {
+        from { transform: rotate(-24deg); } to { transform: rotate(24deg); }
+    }
+    /* Saltos arredondados nos dois espaços; a posição horizontal nunca
+       ultrapassa a largura da frase. */
+    @keyframes mascot-route {
+        0%, 3% { left: 0; transform: translateY(0) scaleX(1); }
+        17% { left: 17%; transform: translateY(0) scaleX(1); }
+        21% { left: 22%; transform: translateY(-10px) scaleX(1); }
+        25% { left: 27%; transform: translateY(0) scaleX(1); }
+        33% { left: 43%; transform: translateY(0) scaleX(1); }
+        37% { left: 48%; transform: translateY(-10px) scaleX(1); }
+        41% { left: 53%; transform: translateY(0) scaleX(1); }
+        47% { left: calc(100% - 38px); transform: translateY(0) scaleX(1); }
+        50% { left: calc(100% - 38px); transform: translateY(0) scaleX(-1); }
+        53% { left: calc(100% - 38px); transform: translateY(0) scaleX(-1); }
+        59% { left: 53%; transform: translateY(0) scaleX(-1); }
+        63% { left: 48%; transform: translateY(-10px) scaleX(-1); }
+        67% { left: 43%; transform: translateY(0) scaleX(-1); }
+        75% { left: 27%; transform: translateY(0) scaleX(-1); }
+        79% { left: 22%; transform: translateY(-10px) scaleX(-1); }
+        83% { left: 17%; transform: translateY(0) scaleX(-1); }
+        97% { left: 0; transform: translateY(0) scaleX(-1); }
+        100% { left: 0; transform: translateY(0) scaleX(1); }
+    }
+
     .hero-copy { color: #c0c8bc; font-size: 1.06rem; max-width: 580px;
                  line-height: 1.7; margin-bottom: 1.7rem; }
     .section-kicker { color: #d9e2d2; font-size: .95rem; font-weight: 650;
@@ -126,8 +188,10 @@ st.markdown(
                               50% { transform: translateY(-7px) rotate(-2deg); } }
     @keyframes mascot-blink { 0%,44%,48%,100% { transform: scaleY(1); }
                               46% { transform: scaleY(.12); } }
-    @media (prefers-reduced-motion: reduce) {\n        .stApp::before, .stApp::after, .block-container::before { animation: none; }
+    @media (prefers-reduced-motion: reduce) {
+        .stApp::before, .stApp::after, .block-container::before { animation: none; }
         .mascot, .mascot:before, .mascot:after { animation: none; }
+        .walking-mascot, .walking-mascot .wm-arm, .walking-mascot .wm-leg { animation: none; }
         div[data-testid="stRadio"] label { transition: none; }
     }
     @media (max-width: 640px) {
@@ -152,7 +216,15 @@ st.markdown(
 )
 st.markdown('<div class="eyebrow">TEXTO / FERRAMENTA DE ESCRITA</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="hero-title">Boas ideias merecem<br><span>palavras melhores.</span></div>',
+    '<div class="hero-title"><span class="hero-first-line">'
+    '<span class="headline-text">Boas ideias merecem</span>'
+    '<span class="walking-mascot" aria-hidden="true">'
+    '<span class="wm-leaf"></span><span class="wm-head">'
+    '<i class="wm-eye"></i><i class="wm-eye"></i><i class="wm-smile"></i></span>'
+    '<span class="wm-arm wm-left"></span><span class="wm-arm wm-right"></span>'
+    '<span class="wm-body"></span>'
+    '<span class="wm-leg wm-left"></span><span class="wm-leg wm-right"></span>'
+    '</span></span><span>palavras melhores.</span></div>',
     unsafe_allow_html=True,
 )
 st.markdown(
