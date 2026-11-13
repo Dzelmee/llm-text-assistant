@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from openai import OpenAI, OpenAIError
 
 from app import build_messages
+from demo import EXAMPLES, demo_response
 
 load_dotenv()
 st.set_page_config(page_title="Texto — assistente de escrita", page_icon="✍️", layout="centered")
@@ -68,22 +69,50 @@ choices = {
     "Explicar de forma simples": "2",
     "Revisar a escrita": "3",
 }
+mode = st.radio(
+    "Modo de uso",
+    ["Demonstração gratuita", "OpenAI API"],
+    horizontal=True,
+    help="O modo demonstração usa respostas fixas e não faz chamadas à API.",
+)
+is_demo = mode == "Demonstração gratuita"
+
+if is_demo:
+    st.info(
+        "Modo demonstração: os resultados são exemplos predefinidos, "
+        "não respostas geradas por inteligência artificial. Nenhuma chamada à API é feita."
+    )
+else:
+    st.caption("Modo IA real: exige chave e créditos disponíveis na API da OpenAI.")
+
 with st.form("assistant_form"):
     action = st.selectbox("O que você precisa?", list(choices))
-    user_text = st.text_area(
-        "Texto",
-        height=220,
-        max_chars=12000,
-        placeholder="Escreva ou cole seu texto aqui...",
-        help="Até 12.000 caracteres.",
+    if is_demo:
+        st.caption("Exemplo preenchido automaticamente. Para usar um texto próprio, selecione OpenAI API.")
+        st.code(EXAMPLES[choices[action]]["input"], language=None, wrap_lines=True)
+        user_text = EXAMPLES[choices[action]]["input"]
+    else:
+        user_text = st.text_area(
+            "Texto",
+            height=220,
+            max_chars=12000,
+            placeholder="Escreva ou cole seu texto aqui...",
+            help="Até 12.000 caracteres.",
+        )
+    submitted = st.form_submit_button(
+        "Ver exemplo" if is_demo else "Processar texto",
+        type="primary",
+        use_container_width=True,
     )
-    submitted = st.form_submit_button("Processar texto", type="primary", use_container_width=True)
 
 if "history" not in st.session_state:
     st.session_state.history = []
 
 if submitted:
-    if not user_text.strip():
+    if is_demo:
+        result = demo_response(choices[action], user_text)
+        st.session_state.history.insert(0, (action, result, "Demonstração · resposta fixa"))
+    elif not user_text.strip():
         st.warning("Adicione um texto para continuar.")
     elif not os.getenv("OPENAI_API_KEY"):
         st.error("Falta configurar OPENAI_API_KEY no arquivo .env.")
@@ -99,15 +128,24 @@ if submitted:
                     temperature=0.3,
                 )
             result = response.choices[0].message.content or "Nenhum conteúdo retornado."
-            st.session_state.history.insert(0, (action, result))
-            st.session_state.history = st.session_state.history[:10]
-        except (OpenAIError, ValueError) as exc:
-            st.error(f"Não foi possível processar o texto: {exc}")
+            st.session_state.history.insert(0, (action, result, "OpenAI API · resposta gerada"))
+        except OpenAIError as exc:
+            if getattr(exc, "status_code", None) == 429:
+                st.error(
+                    "A API retornou um limite de uso ou falta de créditos. "
+                    "Você pode continuar usando o modo demonstração gratuitamente."
+                )
+            else:
+                st.error("Não foi possível consultar a API. Confira sua configuração e tente novamente.")
+        except ValueError as exc:
+            st.error(str(exc))
+
+st.session_state.history = st.session_state.history[:10]
 
 if st.session_state.history:
     st.markdown('<div class="section-kicker">Resultados recentes</div>', unsafe_allow_html=True)
-    for index, (action, result) in enumerate(st.session_state.history):
-        with st.expander(f"{action} · {index + 1}", expanded=index == 0):
+    for index, (action, result, source) in enumerate(st.session_state.history):
+        with st.expander(f"{action} · {source} · {index + 1}", expanded=index == 0):
             st.write(result)
             st.code(result, language=None)
     if st.button("Limpar resultados", type="secondary"):
@@ -116,6 +154,6 @@ if st.session_state.history:
 
 st.markdown(
     '<div class="footer-note">Projeto pessoal desenvolvido em Python + Streamlit. '
-    'Os resultados ficam apenas nesta sessão. O uso da API pode gerar custos.</div>',
+    'O modo demonstração usa exemplos fixos. O histórico fica nesta sessão. O uso da API real pode gerar custos.</div>',
     unsafe_allow_html=True,
 )
