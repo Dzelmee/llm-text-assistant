@@ -31,3 +31,14 @@ def test_invalid_summary_length():
 
 def test_other_actions_do_not_change_with_summary_length():
     assert build_messages("2", "Texto", summary_length="Curto") == build_messages("2", "Texto")
+
+def test_summary_requests_readable_numbers_without_changing_values():
+    message = build_messages("1", "850000 habitantes e R$ 4800000000")[1]["content"]
+    assert "850 mil habitantes" in message
+    assert "R$ 4,8 bilhões" in message
+    assert "Não arredonde números" in message
+
+
+def test_other_actions_do_not_receive_summary_number_guidance():
+    message = build_messages("2", "Texto")[1]["content"]
+    assert "850 mil habitantes" not in message
